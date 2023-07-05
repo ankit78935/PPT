@@ -1,0 +1,363 @@
+Question 1
+
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class Question1 {
+    public int minimumDeleteSum(String s1, String s2) {
+        Map<String, Integer> memo = new HashMap<>();
+        return helper(s1, s2, s1.length() - 1, s2.length() - 1, memo);
+    }
+
+    private int helper(String s1, String s2, int i, int j, Map<String, Integer> memo) {
+        if (i < 0)
+            return getSum(s2, j);
+        if (j < 0)
+            return getSum(s1, i);
+
+        String key = i + "-" + j;
+        if (memo.containsKey(key))
+            return memo.get(key);
+
+        int result;
+        if (s1.charAt(i) == s2.charAt(j)) {
+            result = helper(s1, s2, i - 1, j - 1, memo);
+        } else {
+            int deleteS1 = s1.charAt(i) + helper(s1, s2, i - 1, j, memo);
+            int deleteS2 = s2.charAt(j) + helper(s1, s2, i, j - 1, memo);
+            result = Math.min(deleteS1, deleteS2);
+        }
+
+        memo.put(key, result);
+        return result;
+    }
+
+    private int getSum(String str, int endIndex) {
+        int sum = 0;
+        for (int i = 0; i <= endIndex; i++) {
+            sum += str.charAt(i);
+        }
+        return sum;
+    }
+}
+
+Question 2
+
+public class Question2 {
+    public boolean checkValidString(String s) {
+        return isValid(s, 0, 0);
+    }
+
+    private boolean isValid(String s, int index, int count) {
+        if (index == s.length()) {
+            return count == 0;
+        }
+
+        if (count < 0) {
+            return false;
+        }
+
+        char ch = s.charAt(index);
+        if (ch == '(') {
+            return isValid(s, index + 1, count + 1);
+        } else if (ch == ')') {
+            return isValid(s, index + 1, count - 1);
+        } else { // ch == '*'
+            // Consider '*' as '('
+            boolean option1 = isValid(s, index + 1, count + 1);
+            // Consider '*' as ')'
+            boolean option2 = isValid(s, index + 1, count - 1);
+            // Consider '*' as an empty string
+            boolean option3 = isValid(s, index + 1, count);
+
+            return option1 || option2 || option3;
+        }
+    }
+}
+
+
+Question 3
+
+
+public class Question3 {
+    public int minDistance(String word1, String word2) {
+        return minSteps(word1, word2, word1.length(), word2.length());
+    }
+
+    private int minSteps(String word1, String word2, int m, int n) {
+        // Base cases
+        if (m == 0) {
+            return n;
+        }
+        if (n == 0) {
+            return m;
+        }
+
+        // If the last characters are equal, no deletion needed
+        if (word1.charAt(m - 1) == word2.charAt(n - 1)) {
+            return minSteps(word1, word2, m - 1, n - 1);
+        }
+
+        // If the last characters are different, consider two options:
+        // 1. Delete the last character of word1 and find the minimum steps
+        // 2. Delete the last character of word2 and find the minimum steps
+        return 1 + Math.min(minSteps(word1, word2, m - 1, n), minSteps(word1, word2, m, n - 1));
+    }
+}
+
+
+
+Question 4
+
+
+import java.util.*;
+
+class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode(int val) {
+        this.val = val;
+    }
+}
+
+public class Question4 {
+    public TreeNode str2tree(String s) {
+        if (s.isEmpty()) {
+            return null;
+        }
+
+        int firstParen = s.indexOf("(");
+        int val = firstParen == -1 ? Integer.parseInt(s) : Integer.parseInt(s.substring(0, firstParen));
+        TreeNode root = new TreeNode(val);
+
+        if (firstParen == -1) {
+            return root;
+        }
+
+        int start = firstParen, count = 0;
+        for (int i = start; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                count++;
+            } else if (s.charAt(i) == ')') {
+                count--;
+            }
+
+            if (count == 0 && start == firstParen) {
+                root.left = str2tree(s.substring(start + 1, i));
+                start = i + 1;
+            } else if (count == 0) {
+                root.right = str2tree(s.substring(start + 1, i));
+            }
+        }
+
+        return root;
+    }
+
+    // Inorder traversal for testing
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root != null) {
+            result.addAll(inorderTraversal(root.left));
+            result.add(root.val);
+            result.addAll(inorderTraversal(root.right));
+        }
+        return result;
+    }
+}
+
+
+
+
+Question 5 
+
+
+public class Question5 {
+    public int compress(char[] chars) {
+        return compressHelper(chars, 0, 0);
+    }
+    
+    private int compressHelper(char[] chars, int index, int count) {
+        if (index >= chars.length) {
+            return count;
+        }
+        
+        int start = index;
+        while (index < chars.length && chars[index] == chars[start]) {
+            index++;
+        }
+        
+        chars[count++] = chars[start];
+        if (index - start > 1) {
+            String countStr = String.valueOf(index - start);
+            for (char c : countStr.toCharArray()) {
+                chars[count++] = c;
+            }
+        }
+        
+        return compressHelper(chars, index, count);
+    }
+}
+
+
+
+
+
+Question 6 
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Question6 {
+    public List<Integer> findAnagrams(String s, String p) {
+        List<Integer> result = new ArrayList<>();
+        int sLen = s.length();
+        int pLen = p.length();
+        
+        if (sLen < pLen) {
+            return result;
+        }
+        
+        int[] pCount = new int[26];
+        for (char c : p.toCharArray()) {
+            pCount[c - 'a']++;
+        }
+        
+        for (int i = 0; i <= sLen - pLen; i++) {
+            int[] sCount = new int[26];
+            for (int j = 0; j < pLen; j++) {
+                sCount[s.charAt(i + j) - 'a']++;
+            }
+            
+            if (isAnagram(pCount, sCount)) {
+                result.add(i);
+            }
+        }
+        
+        return result;
+    }
+    
+    private boolean isAnagram(int[] pCount, int[] sCount) {
+        for (int i = 0; i < 26; i++) {
+            if (pCount[i] != sCount[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+
+
+
+Question 7
+
+public class Question7 {
+    private int i; // global index for string traversal
+
+    public String decodeString(String s) {
+        i = 0; // initialize index to 0
+        return decode(s); // call recursive helper function
+    }
+
+    private String decode(String s) {
+        StringBuilder sb = new StringBuilder();
+        int n = s.length();
+
+        while (i < n && s.charAt(i) != ']') {
+            if (Character.isDigit(s.charAt(i))) {
+                int k = 0;
+
+                // Extract the number k
+                while (i < n && Character.isDigit(s.charAt(i))) {
+                    k = k * 10 + (s.charAt(i) - '0');
+                    i++;
+                }
+
+                i++; // Move past the '[' character
+
+                // Recursive call to decode the substring within the brackets
+                String sub = decode(s);
+
+                // Repeat the substring k times
+                for (int j = 0; j < k; j++) {
+                    sb.append(sub);
+                }
+
+                i++; // Move past the ']' character
+            } else {
+                sb.append(s.charAt(i));
+                i++;
+            }
+        }
+
+        return sb.toString();
+    }
+}
+
+
+
+Question 8
+
+public class Question8 {
+    public boolean buddyStrings(String s, String goal) {
+        if (s.length() != goal.length()) {
+            return false;
+        }
+        
+        if (s.equals(goal)) {
+            // Check if there are at least two identical characters in the string
+            int[] count = new int[26];
+            for (char c : s.toCharArray()) {
+                count[c - 'a']++;
+                if (count[c - 'a'] >= 2) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        int n = s.length();
+        int first = -1;
+        int second = -1;
+        
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) != goal.charAt(i)) {
+                if (first == -1) {
+                    first = i;
+                } else if (second == -1) {
+                    second = i;
+                } else {
+                    // More than two positions need swapping
+                    return false;
+                }
+            }
+        }
+        
+        if (first != -1 && second != -1) {
+            // Swap the characters at the first and second positions
+            String swapped = swapChars(s, first, second);
+            if (swapped.equals(goal)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private String swapChars(String s, int i, int j) {
+        char[] chars = s.toCharArray();
+        char temp = chars[i];
+        chars[i] = chars[j];
+        chars[j] = temp;
+        return new String(chars);
+    }
+}
+
+
+
+
